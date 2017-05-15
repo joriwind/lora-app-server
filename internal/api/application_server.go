@@ -293,7 +293,12 @@ func (a *ApplicationServerAPI) HandleDataUp(ctx context.Context, req *as.HandleD
 			Altitude:  rxInfo.Altitude,
 		})
 	}
+	//Act on possible hecomm port??
+	if pl.FPort == 254 {
+		//TODO: send to fog as request?
+	}
 
+	//Send to mqtt handler
 	err = a.ctx.Handler.SendDataUp(pl)
 	if err != nil {
 		errStr := fmt.Sprintf("send data up to handler error: %s", err)
