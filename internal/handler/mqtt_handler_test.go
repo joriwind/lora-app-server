@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
+	"github.com/joriwind/lora-app-server/internal/storage"
+	"github.com/joriwind/lora-app-server/internal/test"
 	"github.com/brocaar/lorawan"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	. "github.com/smartystreets/goconvey/convey"

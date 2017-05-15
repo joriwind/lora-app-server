@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/common"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
+	pb "github.com/joriwind/lora-app-server/api"
+	"github.com/joriwind/lora-app-server/internal/common"
+	"github.com/joriwind/lora-app-server/internal/storage"
+	"github.com/joriwind/lora-app-server/internal/test"
+	"github.com/joriwind/loraserver/api/ns"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

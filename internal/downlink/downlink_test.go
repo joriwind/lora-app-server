@@ -5,9 +5,9 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/brocaar/lora-app-server/internal/common"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
+	"github.com/joriwind/lora-app-server/internal/common"
+	"github.com/joriwind/lora-app-server/internal/storage"
+	"github.com/joriwind/lora-app-server/internal/test"
 	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
 )

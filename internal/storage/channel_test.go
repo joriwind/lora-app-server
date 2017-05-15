@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/brocaar/lora-app-server/internal/test"
+	"github.com/joriwind/lora-app-server/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

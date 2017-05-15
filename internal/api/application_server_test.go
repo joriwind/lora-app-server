@@ -8,13 +8,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/brocaar/lora-app-server/internal/common"
-	"github.com/brocaar/lora-app-server/internal/handler"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
-	"github.com/brocaar/lora-app-server/internal/test/testhandler"
 	"github.com/brocaar/loraserver/api/as"
 	"github.com/brocaar/lorawan"
+	"github.com/joriwind/lora-app-server/internal/common"
+	"github.com/joriwind/lora-app-server/internal/handler"
+	"github.com/joriwind/lora-app-server/internal/storage"
+	"github.com/joriwind/lora-app-server/internal/test"
+	"github.com/joriwind/lora-app-server/internal/test/testhandler"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -2,7 +2,7 @@ appserver:
   build: .
   command: make serve
   volumes:
-    - ./:/go/src/github.com/brocaar/lora-app-server
+    - ./:/go/src/github.com/joriwind/lora-app-server
   links:
     - postgres
     - postgres_test

@@ -1,6 +1,6 @@
 FROM golang:1.7
 
-ENV PROJECT_PATH=/go/src/github.com/brocaar/lora-app-server
+ENV PROJECT_PATH=/go/src/github.com/joriwind/lora-app-server
 ENV PATH=$PATH:$PROJECT_PATH/build
 
 # install tools

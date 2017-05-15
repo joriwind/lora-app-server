@@ -10,7 +10,7 @@ This getting started document describes the steps needed to setup LoRa App
 Server using the provided Debian package repository. Please note that LoRa
 App Server is not limited to Debian / Ubuntu only! General purpose binaries
 can be downloaded from the 
-[releases](https://github.com/brocaar/lora-app-server/releases) page.
+[releases](https://github.com/joriwind/lora-app-server/releases) page.
 
 !!! info
 	An alternative way to setup all the components is by using the

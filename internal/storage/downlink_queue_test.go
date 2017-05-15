@@ -5,7 +5,7 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/brocaar/lora-app-server/internal/test"
+	"github.com/joriwind/lora-app-server/internal/test"
 )
 
 func TestGetNextDownlinkQeueueItem(t *testing.T) {

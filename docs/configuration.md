@@ -67,7 +67,7 @@ For more information about the Redis URL format, see:
 ## Database migrations
 
 It is possible to apply the database-migrations by hand
-(see [migrations](https://github.com/brocaar/lora-app-server/tree/master/migrations))
+(see [migrations](https://github.com/joriwind/lora-app-server/tree/master/migrations))
 or let LoRa App Server migrate to the latest state automatically, by using
 the `--db-automigrate` flag. Make sure that you always make a backup when
 upgrading Lora App Server and / or applying migrations.

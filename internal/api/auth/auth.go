@@ -3,9 +3,9 @@ package auth
 import (
 	"fmt"
 
-	"github.com/brocaar/lora-app-server/internal/storage"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
+	"github.com/joriwind/lora-app-server/internal/storage"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"

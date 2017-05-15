@@ -7,10 +7,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/api/auth"
-	"github.com/brocaar/lora-app-server/internal/common"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/joriwind/lora-app-server/api"
+	"github.com/joriwind/lora-app-server/internal/api/auth"
+	"github.com/joriwind/lora-app-server/internal/common"
+	"github.com/joriwind/lora-app-server/internal/storage"
 	"github.com/brocaar/loraserver/api/ns"
 	"github.com/jmoiron/sqlx"
 )

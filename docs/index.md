@@ -1,7 +1,7 @@
 # LoRa App Server documentation
 
 LoRa App Server is an open-source LoRaWAN application-server, compatible
-with [LoRa Server](https://github.com/brocaar/loraserver). It is responsible
+with [LoRa Server](https://github.com/joriwind/loraserver). It is responsible
 for the node "inventory" part of a LoRaWAN infrastructure, handling of received
 application payloads and the downlink application payload queue. It comes
 with a web-interface and API (RESTful JSON and gRPC) and supports authorization
@@ -17,14 +17,14 @@ and payloads can be enqueued by using MQTT or the API.
 
 ## Downloads
 
-* Pre-compiled binaries are available at the [releases](https://github.com/brocaar/lora-app-server/releases) page:
+* Pre-compiled binaries are available at the [releases](https://github.com/joriwind/lora-app-server/releases) page:
 
 	* Linux (including ARM / Raspberry Pi)
 	* OS X
 	* Windows
 
 * Debian and Ubuntu packages are available at [https://repos.loraserver.io](https://repos.loraserver.io/).
-* Source-code can be found at [https://github.com/brocaar/lora-app-server](https://github.com/brocaar/lora-app-server).
+* Source-code can be found at [https://github.com/joriwind/lora-app-server](https://github.com/joriwind/lora-app-server).
 
 ## Building from source
 
@@ -72,14 +72,14 @@ Alternatively, you can run the same commands from any working
 [Go](https://golang.org/) environment. As all requirements are vendored,
 there is no need to `go get` these. Make sure you have Go 1.7.x installed
 and that you clone this repository to
-`$GOPATH/src/github.com/brocaar/lora-app-server`.
+`$GOPATH/src/github.com/joriwind/lora-app-server`.
 
 ## Contributing
 
 There are a couple of ways to get involved:
 
 * Join the discussions and share your feedback at [https://gitter.io/loraserver/lora-app-server](https://gitter.io/loraserver/lora-app-server)
-* Report bugs or make feature-requests by opening an issue at [https://github.com/brocaar/lora-app-server/issues](https://github.com/brocaar/lora-app-server/issues)
+* Report bugs or make feature-requests by opening an issue at [https://github.com/joriwind/lora-app-server/issues](https://github.com/joriwind/lora-app-server/issues)
 * Fix issues or improve documentation by creating pull-requests
 
 When you would like to add new features, please discuss the feature first
@@ -89,4 +89,4 @@ it, what the usecase is etc...
 ## License
 
 LoRa App Server is distributed under the MIT license. See also
-[LICENSE](https://github.com/brocaar/lora-app-server/blob/master/LICENSE).
+[LICENSE](https://github.com/joriwind/lora-app-server/blob/master/LICENSE).

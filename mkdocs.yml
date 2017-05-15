@@ -1,5 +1,5 @@
 site_name: LoRa App Server - open-source LoRaWAN application-server
-repo_url: https://github.com/brocaar/lora-app-server
+repo_url: https://github.com/joriwind/lora-app-server
 theme_dir: docs/material
 include_next_prev: False
 

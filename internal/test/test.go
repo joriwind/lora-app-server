@@ -10,7 +10,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	"github.com/brocaar/lora-app-server/internal/migrations"
+	"github.com/joriwind/lora-app-server/internal/migrations"
 	"github.com/brocaar/loraserver/api/ns"
 )
 

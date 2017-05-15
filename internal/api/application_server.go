@@ -11,11 +11,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/brocaar/lora-app-server/internal/common"
-	"github.com/brocaar/lora-app-server/internal/handler"
-	"github.com/brocaar/lora-app-server/internal/storage"
 	"github.com/brocaar/loraserver/api/as"
 	"github.com/brocaar/lorawan"
+	"github.com/joriwind/lora-app-server/internal/common"
+	"github.com/joriwind/lora-app-server/internal/handler"
+	"github.com/joriwind/lora-app-server/internal/storage"
 )
 
 // ApplicationServerAPI implements the as.ApplicationServerServer interface.

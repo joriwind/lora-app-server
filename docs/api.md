@@ -8,7 +8,7 @@ RESTful JSON interface, so that you can use the API for web-applications
 
 !!! info "Protocol-buffer files"
     LoRa App Server provides a gRPC client for Go. For other programming languages
-    you can use the .proto files inside the [api](https://github.com/brocaar/lora-app-server/tree/master/api)
+    you can use the .proto files inside the [api](https://github.com/joriwind/lora-app-server/tree/master/api)
     folder for generating clients. See the [gRPC](http://www.grpc.io/) documentation
     for documentation.
 

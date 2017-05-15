@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/test"
+	"github.com/joriwind/lora-app-server/internal/test"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
 )

@@ -1,10 +1,10 @@
 package common
 
 import (
-	"github.com/brocaar/lora-app-server/internal/handler"
 	"github.com/brocaar/loraserver/api/ns"
 	"github.com/garyburd/redigo/redis"
 	"github.com/jmoiron/sqlx"
+	"github.com/joriwind/lora-app-server/internal/handler"
 )
 
 type Context struct {
