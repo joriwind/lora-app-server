@@ -30,6 +30,7 @@ import (
 	"github.com/brocaar/loraserver/api/as"
 	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
+	"github.com/joriwind/hecomm-api/hecomm"
 	"github.com/joriwind/hecomm-api/hecommAPI"
 	pb "github.com/joriwind/lora-app-server/api"
 	"github.com/joriwind/lora-app-server/internal/api"
@@ -154,7 +155,6 @@ func run(c *cli.Context) error {
 	}
 	//HecommAPI callback to set key
 	cb := func(deveui []byte, key []byte) error {
-		//TODO: push key to device
 		//Convert []byte to platform's specs
 		var eui lorawan.EUI64
 		copy(eui[:], deveui[:8])
@@ -177,14 +177,40 @@ func run(c *cli.Context) error {
 	}
 	//Retrieve all the device identifiers
 	var nodes [][]byte
+	var nodesDBC []hecomm.DBCNode
 	for _, node := range nodesDB {
 		nodes = append(nodes, node.DevEUI[:])
+		nodesDBC = append(nodesDBC, hecomm.DBCNode{
+			DevEUI:     node.DevEUI[:],
+			InfType:    1,
+			IsProvider: true,
+			PlAddress:  c.String("hecomm-address"),
+			PlType:     hecomm.CILorawan,
+		})
 	}
 
 	//Create hecomm platform
 	pl, err := hecommAPI.NewPlatform(ctx, c.String("hecomm-address"), cert, nodes, cb)
 	if err != nil {
 		log.Fatalf("Unable to startup hecomm platform: %v\n", err)
+	}
+
+	plConfig := hecomm.DBCPlatform{
+		Address: c.String("hecomm-address"),
+		CI:      hecomm.CILorawan,
+	}
+
+	err = hecommAPI.RegisterPlatform(plConfig)
+	if err != nil {
+		log.Fatalf("Unable to register hecomm platform: %v\n", err)
+		return err
+	}
+
+	//Register nodes with fog
+	err = hecommAPI.RegisterNodes(nodesDBC)
+	if err != nil {
+		log.Fatalf("Could not register nodes with fog: %v\n", err)
+		return err
 	}
 
 	//Start hecomm platform server
