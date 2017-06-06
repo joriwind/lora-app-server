@@ -27,6 +27,10 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 
+	"github.com/brocaar/loraserver/api/as"
+	"github.com/brocaar/loraserver/api/ns"
+	"github.com/brocaar/lorawan"
+	"github.com/joriwind/hecomm-api/hecommAPI"
 	pb "github.com/joriwind/lora-app-server/api"
 	"github.com/joriwind/lora-app-server/internal/api"
 	"github.com/joriwind/lora-app-server/internal/api/auth"
@@ -37,8 +41,6 @@ import (
 	"github.com/joriwind/lora-app-server/internal/static"
 	"github.com/joriwind/lora-app-server/internal/storage"
 	"github.com/joriwind/lora-app-server/internal/storage/gwmigrate"
-	"github.com/brocaar/loraserver/api/as"
-	"github.com/brocaar/loraserver/api/ns"
 )
 
 func init() {
@@ -137,6 +139,58 @@ func run(c *cli.Context) error {
 		}).Info("starting client api server")
 		log.Fatal(http.ListenAndServeTLS(c.String("http-bind"), c.String("http-tls-cert"), c.String("http-tls-key"), handler))
 	}()
+
+	/*	Hecomm Platform server	*/
+
+	//Locate credentials for hecomm communication
+	cert, err := tls.LoadX509KeyPair(c.String("hecomm-cert"), c.String("hecomm-key"))
+	if err != nil {
+		log.Fatalf("Could not load cerfiticate of hecomm: cert: %v, key: %v\n", c.String("hecomm-cert"), c.String("hecomm-key"))
+	}
+	//Retrieve all nodes that will be used for hecomm communication
+	nodesDB, err := storage.GetNodesForApplicationID(lsCtx.DB, 0, 0, 0)
+	if err != nil {
+		log.Fatalf("Could not find nodes for hecomm: %v\n", err)
+	}
+	//HecommAPI callback to set key
+	cb := func(deveui []byte, key []byte) error {
+		//TODO: push key to device
+		//Convert []byte to platform's specs
+		var eui lorawan.EUI64
+		copy(eui[:], deveui[:8])
+
+		//Push key to node
+		//Get corresponding node
+		node, err := storage.GetNode(lsCtx.DB, eui)
+		if err != nil {
+			log.Printf("get node error: %s\n", err)
+			return err
+		}
+		//Add item, pushing key down to node
+		item := &storage.DownlinkQueueItem{Confirmed: true, Data: key[:], DevEUI: eui, FPort: 254, Reference: "key"}
+		err = downlink.HandleDownlinkQueueItem(lsCtx, node, item)
+		if err != nil {
+			fmt.Printf("hecommplatform server: failed to push osSKey: %v\n", err)
+			return err
+		}
+		return nil
+	}
+	//Retrieve all the device identifiers
+	var nodes [][]byte
+	for _, node := range nodesDB {
+		nodes = append(nodes, node.DevEUI[:])
+	}
+
+	//Create hecomm platform
+	pl, err := hecommAPI.NewPlatform(ctx, c.String("hecomm-address"), cert, nodes, cb)
+	if err != nil {
+		log.Fatalf("Unable to startup hecomm platform: %v\n", err)
+	}
+
+	//Start hecomm platform server
+	go pl.Start()
+
+	/*	End of Hecomm Platform server	*/
 
 	// give the http server some time to start
 	time.Sleep(time.Millisecond * 100)
@@ -483,6 +537,24 @@ func main() {
 			Name:   "disable-assign-existing-users",
 			Usage:  "when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)",
 			EnvVar: "DISABLE_ASSIGN_EXISTING_USERS",
+		},
+
+		//Hecomm values
+		cli.StringFlag{
+			Name:   "hecomm-address",
+			Usage:  "host address of hecomm server e.g.: localhost:4000",
+			Value:  "localhost:4000",
+			EnvVar: "HECOMM_ADDRESS",
+		},
+		cli.StringFlag{
+			Name:   "hecomm-cert",
+			Usage:  "certificate used by hecomm server",
+			EnvVar: "HECOMM_CERT",
+		},
+		cli.StringFlag{
+			Name:   "hecomm-key",
+			Usage:  "key used by hecomm server",
+			EnvVar: "HECOMM_KEY",
 		},
 	}
 	app.Run(os.Args)
