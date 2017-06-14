@@ -143,11 +143,14 @@ func run(c *cli.Context) error {
 
 	/*	Hecomm Platform server	*/
 
+	config := &tls.Config{}
 	//Locate credentials for hecomm communication
 	cert, err := tls.LoadX509KeyPair(c.String("hecomm-cert"), c.String("hecomm-key"))
 	if err != nil {
 		log.Fatalf("Could not load cerfiticate of hecomm: cert: %v, key: %v\n", c.String("hecomm-cert"), c.String("hecomm-key"))
 	}
+	config.Certificates = []tls.Certificate{cert}
+
 	//Retrieve all nodes that will be used for hecomm communication
 	nodesDB, err := storage.GetNodesForApplicationID(lsCtx.DB, 0, 0, 0)
 	if err != nil {
@@ -190,7 +193,7 @@ func run(c *cli.Context) error {
 	}
 
 	//Create hecomm platform
-	pl, err := hecommAPI.NewPlatform(ctx, c.String("hecomm-address"), cert, nodes, cb)
+	pl, err := hecommAPI.NewPlatform(ctx, c.String("hecomm-address"), config, nodes, cb)
 	if err != nil {
 		log.Fatalf("Unable to startup hecomm platform: %v\n", err)
 	}
@@ -200,14 +203,14 @@ func run(c *cli.Context) error {
 		CI:      hecomm.CILorawan,
 	}
 
-	err = hecommAPI.RegisterPlatform(plConfig)
+	err = hecommAPI.RegisterPlatform(plConfig, config)
 	if err != nil {
 		log.Fatalf("Unable to register hecomm platform: %v\n", err)
 		return err
 	}
 
 	//Register nodes with fog
-	err = hecommAPI.RegisterNodes(nodesDBC)
+	err = hecommAPI.RegisterNodes(nodesDBC, config)
 	if err != nil {
 		log.Fatalf("Could not register nodes with fog: %v\n", err)
 		return err
