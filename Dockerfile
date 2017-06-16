@@ -9,6 +9,8 @@ RUN go get github.com/kisielk/errcheck
 RUN go get github.com/smartystreets/goconvey
 RUN go get golang.org/x/tools/cmd/stringer
 RUN go get github.com/jteeuwen/go-bindata/...
+RUN go get github.com/joriwind/hecomm-api/...
+RUN go get github.com/monnand/dhkx
 
 # grpc dependencies
 RUN apt-get update && apt-get install -y unzip

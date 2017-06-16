@@ -123,6 +123,7 @@ func run(c *cli.Context) error {
 			clientAPIHandler.ServeHTTP(w, r)
 		} else {
 			if clientHTTPHandler == nil {
+				log.Printf("clientHTTPHandler still empty")
 				w.WriteHeader(http.StatusNotImplemented)
 				return
 			}
@@ -139,6 +140,7 @@ func run(c *cli.Context) error {
 			"tls-key":  c.String("http-tls-key"),
 		}).Info("starting client api server")
 		log.Fatal(http.ListenAndServeTLS(c.String("http-bind"), c.String("http-tls-cert"), c.String("http-tls-key"), handler))
+		//log.Fatal(http.ListenAndServe(c.String("http-bind"), handler))
 	}()
 
 	/*	Hecomm Platform server	*/
@@ -150,11 +152,20 @@ func run(c *cli.Context) error {
 		log.Fatalf("Could not load cerfiticate of hecomm: cert: %v, key: %v\n", c.String("hecomm-cert"), c.String("hecomm-key"))
 	}
 	config.Certificates = []tls.Certificate{cert}
+	config.InsecureSkipVerify = true
 
 	//Retrieve all nodes that will be used for hecomm communication
 	nodesDB, err := storage.GetNodesForApplicationID(lsCtx.DB, 0, 0, 0)
 	if err != nil {
 		log.Fatalf("Could not find nodes for hecomm: %v\n", err)
+	}
+
+	if len(nodesDB) == 0 {
+		log.Printf("Adding a node, because empty!")
+		node := storage.Node{
+		//TODO add auto node
+		}
+		storage.CreateNode(lsCtx.DB, node)
 	}
 	//HecommAPI callback to set key
 	cb := func(deveui []byte, key []byte) error {
@@ -210,10 +221,12 @@ func run(c *cli.Context) error {
 	}
 
 	//Register nodes with fog
-	err = hecommAPI.RegisterNodes(nodesDBC, config)
-	if err != nil {
-		log.Fatalf("Could not register nodes with fog: %v\n", err)
-		return err
+	if len(nodesDBC) > 0 {
+		err = hecommAPI.RegisterNodes(nodesDBC, config)
+		if err != nil {
+			log.Fatalf("Could not register nodes with fog: %v\n", err)
+			return err
+		}
 	}
 
 	//Start hecomm platform server
@@ -227,6 +240,11 @@ func run(c *cli.Context) error {
 	// now the gRPC gateway has been started, attach the http handlers
 	// (this will setup the grpc-gateway too)
 	clientHTTPHandler = mustGetHTTPHandler(ctx, lsCtx, c)
+	if clientHTTPHandler == nil {
+		log.Printf("clientHTTPHandler still empty")
+	} else {
+		log.Printf("clientHTTPHandle filled!")
+	}
 
 	sigChan := make(chan os.Signal)
 	exitChan := make(chan struct{})
