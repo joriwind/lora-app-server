@@ -13,6 +13,7 @@ import (
 
 	"github.com/brocaar/loraserver/api/as"
 	"github.com/brocaar/lorawan"
+	"github.com/joriwind/hecomm-api/hecomm"
 	"github.com/joriwind/lora-app-server/internal/common"
 	"github.com/joriwind/lora-app-server/internal/handler"
 	"github.com/joriwind/lora-app-server/internal/storage"
@@ -33,7 +34,7 @@ func NewApplicationServerAPI(ctx common.Context) *ApplicationServerAPI {
 // JoinRequest handles a join-request.
 func (a *ApplicationServerAPI) JoinRequest(ctx context.Context, req *as.JoinRequestRequest) (*as.JoinRequestResponse, error) {
 	var phy lorawan.PHYPayload
-
+	log.Printf("JOIN REQUEST!!")
 	if err := phy.UnmarshalBinary(req.PhyPayload); err != nil {
 		log.Errorf("unmarshal join-request PHYPayload error: %s", err)
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
@@ -209,6 +210,31 @@ func (a *ApplicationServerAPI) JoinRequest(ctx context.Context, req *as.JoinRequ
 		log.Errorf("send join notification to handler error: %s", err)
 	}
 
+	//Register new node to hecomm
+	if a.ctx.Hecomm == nil {
+		log.Printf("Hecomm not initialized!")
+	} else {
+		//New device in network, add it to hecomm
+		hecommNodes := []hecomm.DBCNode{
+			hecomm.DBCNode{
+				DevEUI:     node.DevEUI[:],
+				PlAddress:  a.ctx.Hecomm.Address,
+				InfType:    1,
+				PlType:     hecomm.CILorawan,
+				IsProvider: true,
+			},
+		}
+
+		go func() {
+			err := a.ctx.Hecomm.RegisterNodes(hecommNodes)
+			if err != nil {
+				log.Printf("Unable to register node: %v\n", err)
+			} else {
+				log.Printf("Registered node to hecomm fog: %v\n", hecommNodes)
+			}
+		}()
+	}
+
 	return &resp, nil
 }
 
@@ -217,6 +243,7 @@ func (a *ApplicationServerAPI) HandleDataUp(ctx context.Context, req *as.HandleD
 	if len(req.RxInfo) == 0 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "RxInfo must have length > 0")
 	}
+	log.Printf("UPLINK!!\n")
 
 	var appEUI, devEUI lorawan.EUI64
 	copy(appEUI[:], req.AppEUI)
