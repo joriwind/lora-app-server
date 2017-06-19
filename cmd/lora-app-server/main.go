@@ -92,6 +92,98 @@ func run(c *cli.Context) error {
 	// Setup DisableAssignExisitngUsers
 	auth.DisableAssignExistingUsers = c.Bool("disable-assign-existing-users")
 
+	/*	Hecomm Platform server	*/
+
+	config := &tls.Config{}
+	//Locate credentials for hecomm communication
+	cert, err := tls.LoadX509KeyPair(c.String("hecomm-cert"), c.String("hecomm-key"))
+	if err != nil {
+		log.Fatalf("Could not load cerfiticate of hecomm: cert: %v, key: %v\n", c.String("hecomm-cert"), c.String("hecomm-key"))
+	}
+	config.Certificates = []tls.Certificate{cert}
+	config.InsecureSkipVerify = true
+
+	//Retrieve all nodes that will be used for hecomm communication
+	nodesDB, err := storage.GetNodesForApplicationID(lsCtx.DB, 0, 0, 0)
+	if err != nil {
+		log.Fatalf("Could not find nodes for hecomm: %v\n", err)
+	}
+
+	/*if len(nodesDB) == 0 {
+		log.Printf("Adding a node, because empty!")
+		node := storage.Node{
+		//TODO add auto node
+		}
+		storage.CreateNode(lsCtx.DB, node)
+	}*/
+	//HecommAPI callback to set key
+	cb := func(deveui []byte, key []byte) error {
+		//Convert []byte to platform's specs
+		var eui lorawan.EUI64
+		copy(eui[:], deveui[:8])
+
+		//Push key to node
+		//Get corresponding node
+		node, err := storage.GetNode(lsCtx.DB, eui)
+		if err != nil {
+			log.Printf("get node error: %s\n", err)
+			return err
+		}
+		//Add item, pushing key down to node
+		item := &storage.DownlinkQueueItem{Confirmed: true, Data: key[:], DevEUI: eui, FPort: 254, Reference: "key"}
+		err = downlink.HandleDownlinkQueueItem(lsCtx, node, item)
+		if err != nil {
+			fmt.Printf("hecommplatform server: failed to push osSKey: %v\n", err)
+			return err
+		}
+		return nil
+	}
+	//Retrieve all the device identifiers
+	var nodes [][]byte
+	var nodesDBC []hecomm.DBCNode
+	for _, node := range nodesDB {
+		nodes = append(nodes, node.DevEUI[:])
+		nodesDBC = append(nodesDBC, hecomm.DBCNode{
+			DevEUI:     node.DevEUI[:],
+			InfType:    1,
+			IsProvider: true,
+			PlAddress:  c.String("hecomm-address"),
+			PlType:     hecomm.CILorawan,
+		})
+	}
+
+	//Create hecomm platform
+	pl, err := hecommAPI.NewPlatform(ctx, c.String("hecomm-address"), config, nodes, cb)
+	if err != nil {
+		log.Fatalf("Unable to startup hecomm platform: %v\n", err)
+	}
+
+	plConfig := hecomm.DBCPlatform{
+		Address: c.String("hecomm-address"),
+		CI:      hecomm.CILorawan,
+	}
+
+	err = pl.RegisterPlatform(plConfig)
+	if err != nil {
+		log.Fatalf("Unable to register hecomm platform: %v\n", err)
+		return err
+	}
+
+	//Register nodes with fog
+	if len(nodesDBC) > 0 {
+		err = pl.RegisterNodes(nodesDBC)
+		if err != nil {
+			log.Fatalf("Could not register nodes with fog: %v\n", err)
+			return err
+		}
+	}
+
+	//Start hecomm platform server
+	go pl.Start()
+	lsCtx.Hecomm = pl
+
+	/*	End of Hecomm Platform server	*/
+
 	// handle incoming downlink payloads
 	go downlink.HandleDataDownPayloads(lsCtx, lsCtx.Handler.DataDownChan())
 
@@ -142,97 +234,6 @@ func run(c *cli.Context) error {
 		log.Fatal(http.ListenAndServeTLS(c.String("http-bind"), c.String("http-tls-cert"), c.String("http-tls-key"), handler))
 		//log.Fatal(http.ListenAndServe(c.String("http-bind"), handler))
 	}()
-
-	/*	Hecomm Platform server	*/
-
-	config := &tls.Config{}
-	//Locate credentials for hecomm communication
-	cert, err := tls.LoadX509KeyPair(c.String("hecomm-cert"), c.String("hecomm-key"))
-	if err != nil {
-		log.Fatalf("Could not load cerfiticate of hecomm: cert: %v, key: %v\n", c.String("hecomm-cert"), c.String("hecomm-key"))
-	}
-	config.Certificates = []tls.Certificate{cert}
-	config.InsecureSkipVerify = true
-
-	//Retrieve all nodes that will be used for hecomm communication
-	nodesDB, err := storage.GetNodesForApplicationID(lsCtx.DB, 0, 0, 0)
-	if err != nil {
-		log.Fatalf("Could not find nodes for hecomm: %v\n", err)
-	}
-
-	if len(nodesDB) == 0 {
-		log.Printf("Adding a node, because empty!")
-		node := storage.Node{
-		//TODO add auto node
-		}
-		storage.CreateNode(lsCtx.DB, node)
-	}
-	//HecommAPI callback to set key
-	cb := func(deveui []byte, key []byte) error {
-		//Convert []byte to platform's specs
-		var eui lorawan.EUI64
-		copy(eui[:], deveui[:8])
-
-		//Push key to node
-		//Get corresponding node
-		node, err := storage.GetNode(lsCtx.DB, eui)
-		if err != nil {
-			log.Printf("get node error: %s\n", err)
-			return err
-		}
-		//Add item, pushing key down to node
-		item := &storage.DownlinkQueueItem{Confirmed: true, Data: key[:], DevEUI: eui, FPort: 254, Reference: "key"}
-		err = downlink.HandleDownlinkQueueItem(lsCtx, node, item)
-		if err != nil {
-			fmt.Printf("hecommplatform server: failed to push osSKey: %v\n", err)
-			return err
-		}
-		return nil
-	}
-	//Retrieve all the device identifiers
-	var nodes [][]byte
-	var nodesDBC []hecomm.DBCNode
-	for _, node := range nodesDB {
-		nodes = append(nodes, node.DevEUI[:])
-		nodesDBC = append(nodesDBC, hecomm.DBCNode{
-			DevEUI:     node.DevEUI[:],
-			InfType:    1,
-			IsProvider: true,
-			PlAddress:  c.String("hecomm-address"),
-			PlType:     hecomm.CILorawan,
-		})
-	}
-
-	//Create hecomm platform
-	pl, err := hecommAPI.NewPlatform(ctx, c.String("hecomm-address"), config, nodes, cb)
-	if err != nil {
-		log.Fatalf("Unable to startup hecomm platform: %v\n", err)
-	}
-
-	plConfig := hecomm.DBCPlatform{
-		Address: c.String("hecomm-address"),
-		CI:      hecomm.CILorawan,
-	}
-
-	err = hecommAPI.RegisterPlatform(plConfig, config)
-	if err != nil {
-		log.Fatalf("Unable to register hecomm platform: %v\n", err)
-		return err
-	}
-
-	//Register nodes with fog
-	if len(nodesDBC) > 0 {
-		err = hecommAPI.RegisterNodes(nodesDBC, config)
-		if err != nil {
-			log.Fatalf("Could not register nodes with fog: %v\n", err)
-			return err
-		}
-	}
-
-	//Start hecomm platform server
-	go pl.Start()
-
-	/*	End of Hecomm Platform server	*/
 
 	// give the http server some time to start
 	time.Sleep(time.Millisecond * 100)
@@ -589,8 +590,8 @@ func main() {
 		//Hecomm values
 		cli.StringFlag{
 			Name:   "hecomm-address",
-			Usage:  "host address of hecomm server e.g.: localhost:4000",
-			Value:  "localhost:4000",
+			Usage:  "host address of hecomm server e.g.: 192.168.2.229:4000",
+			Value:  "192.168.2.229:4000",
 			EnvVar: "HECOMM_ADDRESS",
 		},
 		cli.StringFlag{
