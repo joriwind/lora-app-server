@@ -225,14 +225,12 @@ func (a *ApplicationServerAPI) JoinRequest(ctx context.Context, req *as.JoinRequ
 			},
 		}
 
-		go func() {
-			err := a.ctx.Hecomm.RegisterNodes(hecommNodes)
-			if err != nil {
-				log.Printf("Unable to register node: %v\n", err)
-			} else {
-				log.Printf("Registered node to hecomm fog: %v\n", hecommNodes)
-			}
-		}()
+		err := a.ctx.Hecomm.RegisterNodes(hecommNodes)
+		if err != nil {
+			log.Printf("Unable to register node: %v\n", err)
+		} else {
+			log.Printf("Registered node to hecomm fog: %v\n", hecommNodes)
+		}
 	}
 
 	return &resp, nil
