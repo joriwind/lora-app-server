@@ -94,14 +94,24 @@ func run(c *cli.Context) error {
 
 	/*	Hecomm Platform server	*/
 
-	config := &tls.Config{}
 	//Locate credentials for hecomm communication
 	cert, err := tls.LoadX509KeyPair(c.String("hecomm-cert"), c.String("hecomm-key"))
 	if err != nil {
 		log.Fatalf("Could not load cerfiticate of hecomm: cert: %v, key: %v\n", c.String("hecomm-cert"), c.String("hecomm-key"))
 	}
-	config.Certificates = []tls.Certificate{cert}
-	config.InsecureSkipVerify = true
+
+	caCert, err := ioutil.ReadFile(c.String("hecomm-cacert"))
+	if err != nil {
+		log.Fatalf("cacert error: %v\n", err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	config := &tls.Config{
+		Certificates:       []tls.Certificate{cert},
+		ClientCAs:          caCertPool,
+		InsecureSkipVerify: false,
+	}
 
 	//Retrieve all nodes that will be used for hecomm communication
 	nodesDB, err := storage.GetNodesForApplicationID(lsCtx.DB, 0, 0, 0)
@@ -465,7 +475,46 @@ func mustGetTransportCredentials(tlsCert, tlsKey, caCert string, verifyClientCer
 	}
 }
 
+func getLocalIP() string {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		log.Printf("Error in searching localIP: %v\n", err)
+		return ""
+	}
+	// handle err
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			log.Printf("Error in searching localIP: %v\n", err)
+			return ""
+		}
+		// handle err
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			//If it is not loopback, it should be ok
+			if !ip.IsLoopback() {
+
+				return ip.String()
+			}
+
+		}
+	}
+	log.Printf("No non loopback IP addresses found!\n")
+	return ""
+}
+
 func main() {
+	localIP := getLocalIP()
+	if localIP == "" {
+		localIP = "192.168.2.106"
+	}
+
 	app := cli.NewApp()
 	app.Name = "lora-app-server"
 	app.Usage = "application-server for LoRaWAN networks"
@@ -590,8 +639,8 @@ func main() {
 		//Hecomm values
 		cli.StringFlag{
 			Name:   "hecomm-address",
-			Usage:  "host address of hecomm server e.g.: 192.168.2.229:4000",
-			Value:  "192.168.2.229:4000",
+			Usage:  "host address of hecomm server e.g.: " + localIP + ":4000",
+			Value:  localIP + ":2000",
 			EnvVar: "HECOMM_ADDRESS",
 		},
 		cli.StringFlag{
@@ -603,6 +652,11 @@ func main() {
 			Name:   "hecomm-key",
 			Usage:  "key used by hecomm server",
 			EnvVar: "HECOMM_KEY",
+		},
+		cli.StringFlag{
+			Name:   "hecomm-cacert",
+			Usage:  "CA certificate used by hecomm server",
+			EnvVar: "HECOMM_CACERT",
 		},
 	}
 	app.Run(os.Args)
