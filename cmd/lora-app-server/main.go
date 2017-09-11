@@ -109,7 +109,7 @@ func run(c *cli.Context) error {
 
 	config := &tls.Config{
 		Certificates:       []tls.Certificate{cert},
-		ClientCAs:          caCertPool,
+		RootCAs:            caCertPool,
 		InsecureSkipVerify: false,
 	}
 
