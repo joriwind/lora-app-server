@@ -646,16 +646,19 @@ func main() {
 		cli.StringFlag{
 			Name:   "hecomm-cert",
 			Usage:  "certificate used by hecomm server",
+			Value:  "certs/lora-app-server.cert.pem",
 			EnvVar: "HECOMM_CERT",
 		},
 		cli.StringFlag{
 			Name:   "hecomm-key",
 			Usage:  "key used by hecomm server",
+			Value:  "private/lora-app-server.key.pem",
 			EnvVar: "HECOMM_KEY",
 		},
 		cli.StringFlag{
 			Name:   "hecomm-cacert",
 			Usage:  "CA certificate used by hecomm server",
+			Value:  "certs/ca-chain.cert.pem",
 			EnvVar: "HECOMM_CACERT",
 		},
 	}
