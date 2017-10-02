@@ -47,6 +47,7 @@ the root of this project:
 ```bash
 docker-compose run --rm appserver bash
 ```
+WARNING: Image for service appserver was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
 
 A few example commands that you can run:
 
