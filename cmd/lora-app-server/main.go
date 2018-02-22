@@ -140,7 +140,7 @@ func run(c *cli.Context) error {
 			return err
 		}
 		//Add item, pushing key down to node
-		item := &storage.DownlinkQueueItem{Confirmed: true, Data: key[:], DevEUI: eui, FPort: 254, Reference: "key"}
+		item := &storage.DownlinkQueueItem{Confirmed: false, Data: key[:], DevEUI: eui, FPort: 254, Reference: "key"}
 		err = downlink.HandleDownlinkQueueItem(lsCtx, node, item)
 		if err != nil {
 			fmt.Printf("hecommplatform server: failed to push osSKey: %v\n", err)
